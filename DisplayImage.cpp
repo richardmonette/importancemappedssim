@@ -53,28 +53,36 @@ Scalar getMSSIM( const Mat& i1, const Mat& i2)
     divide(t3, t1, ssim_map);        // ssim_map =  t3./t1;
 
     Scalar mssim = mean(ssim_map);   // mssim = average of ssim map
+
+    return mssim;
 }
 
 int main(int argc, char** argv )
 {
-    if ( argc != 2 )
+    if ( argc != 3 )
     {
-        printf("usage: DisplayImage.out <Image_Path>\n");
+        printf("usage: DisplayImage.out <Image_Path> <Image_Path>\n");
         return -1;
     }
 
-    Mat image;
-    image = imread( argv[1], 1 );
+    Mat img_src;
+    Mat img_compressed;
 
-    if ( !image.data )
+    img_src = imread(argv[1], CV_LOAD_IMAGE_GRAYSCALE);
+    img_compressed = imread(argv[2], CV_LOAD_IMAGE_GRAYSCALE);
+
+    img_src.convertTo(img_src, CV_64F);
+    img_compressed.convertTo(img_compressed, CV_64F);
+
+    if ( !img_src.data || !img_compressed.data )
     {
-        printf("No image data \n");
+        printf("Problem with input image data, exiting. \n");
         return -1;
     }
-    namedWindow("Display Image", WINDOW_AUTOSIZE );
-    imshow("Display Image", image);
 
-    waitKey(0);
+    Scalar mssim = getMSSIM(img_src, img_compressed);
+
+    printf("%f\n", mssim[0]);
 
     return 0;
 }
