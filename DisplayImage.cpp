@@ -3,7 +3,7 @@
 
 using namespace cv;
 
-Scalar getMSSIM( const Mat& i1, const Mat& i2)
+float getMSSIM(const Mat& i1, const Mat& i2, const Mat& importance_map)
 {
     const double C1 = 6.5025, C2 = 58.5225;
     /***************************** INITS **********************************/
@@ -52,13 +52,33 @@ Scalar getMSSIM( const Mat& i1, const Mat& i2)
     Mat ssim_map;
     divide(t3, t1, ssim_map);        // ssim_map =  t3./t1;
 
-    Scalar mssim = mean(ssim_map);   // mssim = average of ssim map
+    float sum = 0;
+    float count = 0;
+
+    for(int i=0; i < i1.rows; i++)
+    {
+        for(int j=0; j < i1.cols; j++)
+        {
+            if (importance_map.at<uchar>(i,j) > 0)
+            {
+                sum += ssim_map.at<float>(i,j);
+                count += 1;
+            }
+        }
+    }
+
+    float mssim = sum / count;
+
+    // Scalar mssim = mean(ssim_map);   // mssim = average of ssim map
 
     return mssim;
 }
 
 int main(int argc, char** argv )
 {
+    int scale = 1;
+    int delta = 0;
+
     if ( argc != 3 )
     {
         printf("usage: DisplayImage.out <Image_Path> <Image_Path>\n");
@@ -80,9 +100,22 @@ int main(int argc, char** argv )
         return -1;
     }
 
-    Scalar mssim = getMSSIM(img_src, img_compressed);
+    Mat grad_x, grad_y;
+    Mat abs_grad_x, abs_grad_y;
 
-    printf("%f\n", mssim[0]);
+    Sobel(img_src, grad_x, CV_16S, 1, 0, 3, scale, delta, BORDER_DEFAULT);
+    convertScaleAbs( grad_x, abs_grad_x );
+
+    Sobel(img_src, grad_y, CV_16S, 0, 1, 3, scale, delta, BORDER_DEFAULT);
+    convertScaleAbs( grad_y, abs_grad_y );
+
+    Mat grad;
+
+    addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
+
+    float mssim = getMSSIM(img_src, img_compressed, grad);
+
+    printf("%f\n", mssim);
 
     return 0;
 }
