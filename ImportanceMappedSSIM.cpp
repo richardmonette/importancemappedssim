@@ -102,6 +102,8 @@ int main(int argc, char** argv )
         return -1;
     }
 
+    // sobel example: http://docs.opencv.org/2.4/doc/tutorials/imgproc/imgtrans/sobel_derivatives/sobel_derivatives.html
+
     Mat grad_x, grad_y;
     Mat abs_grad_x, abs_grad_y;
 
