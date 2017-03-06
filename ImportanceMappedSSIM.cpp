@@ -3,6 +3,8 @@
 
 using namespace cv;
 
+// function based upon http://docs.opencv.org/2.4/doc/tutorials/highgui/video-input-psnr-ssim/video-input-psnr-ssim.html
+
 float getMSSIM(const Mat& i1, const Mat& i2, const Mat& importance_map)
 {
     const double C1 = 6.5025, C2 = 58.5225;
